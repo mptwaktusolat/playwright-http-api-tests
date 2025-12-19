@@ -109,7 +109,7 @@ test.describe("Invalid Get zone by GPS", () => {
     expect(response.status()).toBe(500);
     expect(result).toHaveProperty("error");
     expect(result.error).toBe(
-      "A parameter of function st_srid contains a geometry with longitude 200.000000, which is out of range. It must be within (-180.000000, 180.000000]."
+      "Longitude 200.000000 is out of range in function st_geomfromtext. It must be within (-180.000000, 180.000000]."
     );
   });
 });

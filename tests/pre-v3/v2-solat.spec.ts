@@ -61,12 +61,12 @@ test("Get Valid Data for month rollover", async ({ request }) => {
   const firstDay = result.prayers[0];
   expect(firstDay.day).toBe(1);
   expect(firstDay.hijri).toBe("1447-07-11");
-  expect(firstDay.fajr).toBe(1767248040);
-  expect(firstDay.syuruk).toBe(1767252360);
-  expect(firstDay.dhuhr).toBe(1767273840);
-  expect(firstDay.asr).toBe(1767199560);
-  expect(firstDay.maghrib).toBe(1767208680);
-  expect(firstDay.isha).toBe(1767213180);
+  expect(firstDay.fajr).toBe(1767219240);
+  expect(firstDay.syuruk).toBe(1767223560);
+  expect(firstDay.dhuhr).toBe(1767245040);
+  expect(firstDay.asr).toBe(1767257160);
+  expect(firstDay.maghrib).toBe(1767266280);
+  expect(firstDay.isha).toBe(1767270780);
 });
 
 test("Invalid Get Data for non-existing zone", async ({ request }) => {
