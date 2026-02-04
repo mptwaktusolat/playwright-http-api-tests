@@ -11,7 +11,7 @@ test("Get Valid Data for current datetime", async ({ request }) => {
   expect(result.zone).toBe(zone);
   expect(result.periodType).toBe("month");
   expect(result.prayerTime).not.toBeNull();
-  expect(result.prayerTime.length).toBeGreaterThan(28);
+  expect(result.prayerTime.length).toBeGreaterThanOrEqual(28);
 });
 
 test("Get Valid Data for specific month", async ({ request }) => {
@@ -79,7 +79,7 @@ test("Invalid get non-existing data", async ({ request }) => {
       headers: {
         Accept: "application/json",
       },
-    }
+    },
   );
   expect(response.status()).toBe(500);
   const result = await response.json();
