@@ -11,11 +11,11 @@ test("Get Valid Data for current datetime", async ({ request }) => {
   expect(result.zone).toBe(zone);
   expect(result.year).toBe(now.getFullYear());
   expect(result.month).toBe(
-    now.toLocaleString("en-US", { month: "short" }).toUpperCase()
+    now.toLocaleString("en-US", { month: "short" }).toUpperCase(),
   );
   expect(result.month_number).toBe(now.getMonth() + 1);
   expect(result.prayers).toHaveLength(
-    new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+    new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate(),
   );
 });
 
@@ -82,9 +82,93 @@ test("Invalid get non-existing data", async ({ request }) => {
   const year = 2022;
   const month = 12;
   const response = await request.get(
-    `/v2/solat/WLY02?year=${year}&month=${month}`
+    `/v2/solat/WLY02?year=${year}&month=${month}`,
   );
   expect(response.status()).toBe(404);
   const result = await response.json();
   expect(result.message).toBe(`No data found for zone: WLY02 for Dec/2022`);
+});
+
+test.describe("Valid Get prayer time by GPS", () => {
+  test("should get prayer time in Kuala Lumpur", async ({ request }) => {
+    const response = await request.get(
+      "/v2/solat/3.113034350544325/101.66375285717807?year=2026&month=6",
+    );
+    const result = await response.json();
+
+    expect(result.zone).toBe("WLY01");
+    expect(result.year).toBe(2026);
+    expect(result.month).toBe("JUN");
+    expect(result.month_number).toBe(6);
+    expect(result.prayers).toHaveLength(30);
+
+    // Assert first day data
+    const firstDay = result.prayers[0];
+    expect(firstDay.day).toBe(1);
+    expect(firstDay.hijri).toBe("1447-12-15");
+    expect(firstDay.fajr).toBe(1780264140);
+  });
+
+  test("should get prayer time at Bentong (Rumah Nenek)", async ({
+    request,
+  }) => {
+    const response = await request.get(
+      "/v2/solat/3.1834015431/102.276653656?year=2026&month=6",
+    );
+    const result = await response.json();
+
+    expect(result.zone).toBe("PHG04");
+    expect(result.year).toBe(2026);
+    expect(result.month).toBe("JUN");
+    expect(result.month_number).toBe(6);
+    expect(result.prayers).toHaveLength(30);
+
+    // Assert first day data
+    const firstDay = result.prayers[0];
+    expect(firstDay.day).toBe(1);
+    expect(firstDay.hijri).toBe("1447-12-15");
+    expect(firstDay.fajr).toBe(1780263960);
+  });
+});
+
+test.describe("Invalid Get prayer time by GPS", () => {
+  test("should throw error when coordinates is outside Malaysia", async ({
+    request,
+  }) => {
+    // Location Marina Bay, Singapore
+    const response = await request.get(
+      "/v2/solat/1.282016154947726/103.85414065511813?year=2026&month=6",
+    );
+    const result = await response.json();
+
+    expect(response.status()).toBe(422); // Unprocessable Entity
+    expect(result).toHaveProperty("message");
+    expect(result.message).toBe("No zone found for the given coordinates.");
+  });
+
+  test("Should throw error when coordinates is out of range", async ({
+    request,
+  }) => {
+    const response = await request.get("/v2/solat/100/200");
+    const result = await response.json();
+
+    expect(response.status()).toBe(422); // Unprocessable Entity
+    expect(result).toHaveProperty("message");
+    expect(result.message).toBe(
+      "SQLSTATE[22S02]: <<Unknown error>>: 3616 Longitude 200.000000 is out of range in function st_geomfromtext. It must be within (-180.000000, 180.000000]. (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: waktusolat-api, SQL: select * from `zone_polygons` where ST_Within(ST_GeomFromText(POINT(100.000000 200.000000), 4326), polygon) limit 1)",
+    );
+  });
+
+  test("Should throw error when coordinates is not a number", async ({
+    request,
+  }) => {
+    const response = await request.get("/v2/solat/borhan/ahmad");
+    const result = await response.json();
+
+    expect(response.status()).toBe(422); // Unprocessable Entity
+    expect(result).toHaveProperty("message");
+    expect(result.message).toBe(
+      "Invalid coordinates. The lat field must be a number. The long field must be a number.",
+    );
+  });
 });
