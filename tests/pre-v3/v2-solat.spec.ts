@@ -21,27 +21,29 @@ test("Get Valid Data for current datetime", async ({ request }) => {
 
 test("Get Valid Data for specific month", async ({ request }) => {
   const zone = "KDH01";
-  const response = await request.get(`/v2/solat/${zone}?year=2025&month=5`);
+  const response = await request.get(`/v2/solat/${zone}?year=2026&month=8`);
   expect(response.status()).toBe(200);
 
   const result = await response.json();
 
   expect(result.zone).toBe(zone);
-  expect(result.year).toBe(2025);
-  expect(result.month).toBe("MAY");
-  expect(result.month_number).toBe(5);
+  expect(result.year).toBe(2026);
+  expect(result.month).toBe("AUG");
+  expect(result.month_number).toBe(8);
   expect(result.prayers).toHaveLength(31);
 
   // Assert first day data
   const firstDay = result.prayers[0];
   expect(firstDay.day).toBe(1);
-  expect(firstDay.hijri).toBe("1446-11-03");
-  expect(firstDay.fajr).toBe(1746050100);
-  expect(firstDay.syuruk).toBe(1746054240);
-  expect(firstDay.dhuhr).toBe(1746076680);
-  expect(firstDay.asr).toBe(1746088440);
-  expect(firstDay.maghrib).toBe(1746098820);
-  expect(firstDay.isha).toBe(1746103140);
+  expect(firstDay.hijri).toBe("1448-02-17");
+  expect(firstDay.imsak).toBe(1785534660);
+  expect(firstDay.fajr).toBe(1785535260);
+  expect(firstDay.syuruk).toBe(1785539460);
+  expect(firstDay.dhuha).toBe(1785541080);
+  expect(firstDay.dhuhr).toBe(1785562020);
+  expect(firstDay.asr).toBe(1785574020);
+  expect(firstDay.maghrib).toBe(1785584280);
+  expect(firstDay.isha).toBe(1785588660);
 });
 
 test("Get Valid Data for month rollover", async ({ request }) => {
@@ -61,12 +63,28 @@ test("Get Valid Data for month rollover", async ({ request }) => {
   const firstDay = result.prayers[0];
   expect(firstDay.day).toBe(1);
   expect(firstDay.hijri).toBe("1447-07-11");
+  expect(firstDay.imsak).toBe(1767218640);
   expect(firstDay.fajr).toBe(1767219240);
   expect(firstDay.syuruk).toBe(1767223560);
+  expect(firstDay.dhuha).toBe(1767225060);
   expect(firstDay.dhuhr).toBe(1767245040);
   expect(firstDay.asr).toBe(1767257160);
   expect(firstDay.maghrib).toBe(1767266280);
   expect(firstDay.isha).toBe(1767270780);
+});
+
+test("Get Valid Data with dhuha as null for year before 2025", async ({
+  request,
+}) => {
+  const zone = "KTN01";
+  const response = await request.get(`/v2/solat/${zone}?year=2024&month=1`);
+  expect(response.status()).toBe(200);
+
+  const result = await response.json();
+
+  // Assert dhuha is null before 2025
+  const firstDay = result.prayers[0];
+  expect(firstDay.dhuha).toBeNull();
 });
 
 test("Invalid Get Data for non-existing zone", async ({ request }) => {
@@ -106,7 +124,14 @@ test.describe("Valid Get prayer time by GPS", () => {
     const firstDay = result.prayers[0];
     expect(firstDay.day).toBe(1);
     expect(firstDay.hijri).toBe("1447-12-15");
+    expect(firstDay.imsak).toBe(1780263540);
     expect(firstDay.fajr).toBe(1780264140);
+    expect(firstDay.syuruk).toBe(1780268520);
+    expect(firstDay.dhuha).toBe(1780270020);
+    expect(firstDay.dhuhr).toBe(1780290840);
+    expect(firstDay.asr).toBe(1780303140);
+    expect(firstDay.maghrib).toBe(1780312920);
+    expect(firstDay.isha).toBe(1780317420);
   });
 
   test("should get prayer time at Bentong (Rumah Nenek)", async ({
@@ -127,7 +152,14 @@ test.describe("Valid Get prayer time by GPS", () => {
     const firstDay = result.prayers[0];
     expect(firstDay.day).toBe(1);
     expect(firstDay.hijri).toBe("1447-12-15");
+    expect(firstDay.imsak).toBe(1780263360);
     expect(firstDay.fajr).toBe(1780263960);
+    expect(firstDay.syuruk).toBe(1780268400);
+    expect(firstDay.dhuha).toBe(1780269900);
+    expect(firstDay.dhuhr).toBe(1780290720);
+    expect(firstDay.asr).toBe(1780303020);
+    expect(firstDay.maghrib).toBe(1780312860);
+    expect(firstDay.isha).toBe(1780317360);
   });
 });
 
